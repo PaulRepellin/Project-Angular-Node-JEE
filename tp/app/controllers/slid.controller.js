@@ -14,7 +14,7 @@ SlidController.read=function(request,response){
 			console.error(err);
 		else
 		{
-			console.log("---------CONTROLLER----------");
+			console.log("\n\n---------CONTROLLER------READ---------\n\n");
 			console.log(data);
 			response.send(data);
 		}
@@ -29,7 +29,7 @@ SlidController.list=function(request,response){
 	var jsonTab = {};
 	console.log(p);
 	fs.readdir(p,function(err,files){
-		console.log("---------CONTROLLER----------");
+		console.log("\n\n---------CONTROLLER------LIST----------\n\n");
 		if(err)
 			console.err(new Error("errorrrrr"));
 		for(i=0;i<files.length;i++){
@@ -38,6 +38,7 @@ SlidController.list=function(request,response){
 				var jsonElt = JSON.parse(test.toString());
 				jsonTab[jsonElt.id] = jsonElt;
 				console.log(jsonTab[jsonElt.id]);	
+				console.log("\n\n");
 			}
 		}
 		response.send(jsonTab);
@@ -45,7 +46,7 @@ SlidController.list=function(request,response){
 }
 
 SlidController.create=function(request,response){
-	console.log("-------CONTROLLER--------CREATE--------");
+	console.log("\n\n-------CONTROLLER--------CREATE--------\n\n");
 	
 
 	var p = CONFIG.contentDirectory;
@@ -55,9 +56,13 @@ SlidController.create=function(request,response){
 		});
 
 	request.on('end',function(){
-		var slid=new ModelSlid(JSON.parse(content.toString()));
+		var jsonModel=JSON.parse(content.toString())
+		var slid=new ModelSlid(jsonModel);
+		slid.setData(jsonModel.data);
 		console.log(content);
+		console.log("Verification data : ")
 		console.log(slid.getData());
+		console.log("\n\n");
 		ModelSlid.create(slid, function(err){
 			if (err) {
 			console.error(err);
