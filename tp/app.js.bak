@@ -1,0 +1,89 @@
+"use strict";
+var CONFIG = require("./config.json");
+process.env.CONFIG = JSON.stringify(CONFIG);
+
+console.log("It Works !");
+// déclarer express
+var express = require("express");
+
+var app = express();
+//init path
+var path = require("path");
+//déclarer la route
+var defaultRoute = require("./app/routes/default.route.js");
+app.use(defaultRoute);
+
+
+//déclarer http
+var http = require("http");
+var defaultRoute = require("./app/routes/default.route.js");
+var IOController = require("./app/controllers/io.controller.js");
+
+
+var fs=require('fs');
+// init server
+var server = http.createServer(app);
+server.listen(CONFIG.port);
+
+//init exports with : 
+var model=require("./app/models/slid.model.js");
+
+// define static route to admin and watch folder
+app.use("/admin", express.static(path.join(__dirname, "public/admin")));
+app.use("/watch", express.static(path.join(__dirname, "public/watch")));
+
+app.use("/model",function(request, response) 
+{
+	console.log("ok");
+});
+
+app.use("/loadPres",function(request, response) 
+{
+
+	fs.readdir(CONFIG.presentationDirectory,function(err,files)
+	{
+		var jsonTab={};
+		console.log(files.length);
+		
+		for(var i=0;i<files.length;i++)
+		{
+			if(".json"=== path.extname(files[i].toString()))	 
+			{	
+				var file_readable = fs.readFileSync(path.join(CONFIG.presentationDirectory,files[i]));
+				var jsonElement= JSON.parse(file_readable.toString());
+				jsonTab[jsonElement.id]=jsonElement;
+			}
+			console.log(jsonTab);
+			response.send(jsonTab);
+		}
+			
+	}); 
+
+});
+
+app.post("/savePres" , function(request,response){
+var p = CONFIG.presentationDirectory;
+	var content = "";
+	request.on('data',function(data){
+			content += data.toString();
+		});
+
+	request.on('end',function(){
+			var jsonElt = JSON.parse(content.toString());
+			var nomPres = jsonElt.id;
+			nomPres += ".pres.json";
+			fs.writeFile(path.join(p,nomPres), content, function (err) {
+  		if (err) throw err;
+  		response.send(content);
+ 	 console.log('It\'s saved!');
+		});
+
+		});
+	
+
+});
+
+	
+
+
+});
